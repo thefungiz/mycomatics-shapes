@@ -1,6 +1,6 @@
 let rSlider, verticalAngleSlider, radialAngleSlider, depressionSlider;
 let shapeRadio;
-let surfaceCheckbox;
+let surfaceCheckbox, gridCheckbox, lightCheckbox;
 let r, theta, phi;
 let shapeMap;
 
@@ -19,16 +19,22 @@ function setup() {
 
   surfaceCheckbox = createCheckbox('Surface');
   surfaceCheckbox.position(200, 20);
+  gridCheckbox = createCheckbox('Grid', true);
+  gridCheckbox.position(200, 40);
+  lightCheckbox = createCheckbox('Light', true);
+  lightCheckbox.position(200, 60);
 
   shapeMap = new Map()
   shapeMap.set('convex', (r, t) => {return r})
   shapeMap.set('depressed', (r, t) => {return Math.max(r * sin(t), depressionSlider.value())})
+  shapeMap.set('campanulate', (r, t) => {return r * Math.max(sin(t), cos(t))})
 
   shapeRadio = createRadio();
   shapeRadio.position(10, 130);
   shapeRadio.size(60);
   shapeRadio.option('convex')
   shapeRadio.option('depressed')
+  shapeRadio.option('campanulate')
   shapeRadio.selected('convex')
 }
 
@@ -55,12 +61,23 @@ function draw() {
   orbitControl();
 
   strokeWeight(1)
-  stroke(0)
 
   if (!surfaceCheckbox.checked()) {
     noFill()
   } else {
     fill('white')
+  }
+
+  if (!gridCheckbox.checked()) {
+    noStroke();
+  } else {
+    stroke(0)
+  }
+
+  if (!lightCheckbox.checked()) {
+    noLights()
+  } else {
+    lights()
   }
 
   for (let i = 0; i < 24; i++) {
