@@ -4,37 +4,41 @@ let surfaceCheckbox, gridCheckbox, lightCheckbox;
 let r, theta, phi;
 let shapeMap;
 
+const addShape = (map, radio, name, formula) => {
+  map.set(name, formula);
+  radio.option(name);
+}
+
 function setup() {
   createCanvas(600, 600, WEBGL);
   
   rSlider = createSlider(50, 300, 150, 1);
-  rSlider.position(20, 10);
+  rSlider.position(20, 40);
   
   verticalAngleSlider = createSlider(0, PI+0.01, HALF_PI, PI/8);
-  verticalAngleSlider.position(20, 40);
+  verticalAngleSlider.position(20, 70);
   radialAngleSlider = createSlider(0, 2*PI+0.01, 2*PI, PI/8);
-  radialAngleSlider.position(20, 70);
+  radialAngleSlider.position(20, 100);
   depressionSlider = createSlider(0, 2*r, 0, r/8);
-  depressionSlider.position(20, 100);
+  depressionSlider.position(20, 130);
 
   surfaceCheckbox = createCheckbox('Surface');
-  surfaceCheckbox.position(200, 20);
+  surfaceCheckbox.position(200, 40);
   gridCheckbox = createCheckbox('Grid', true);
-  gridCheckbox.position(200, 40);
+  gridCheckbox.position(200, 60);
   lightCheckbox = createCheckbox('Light', true);
-  lightCheckbox.position(200, 60);
+  lightCheckbox.position(200, 80);
 
   shapeMap = new Map()
-  shapeMap.set('convex', (r, t) => {return r})
-  shapeMap.set('depressed', (r, t) => {return Math.max(r * sin(t), depressionSlider.value())})
-  shapeMap.set('campanulate', (r, t) => {return r * Math.max(sin(t), cos(t))})
 
   shapeRadio = createRadio();
-  shapeRadio.position(10, 130);
-  shapeRadio.size(60);
-  shapeRadio.option('convex')
-  shapeRadio.option('depressed')
-  shapeRadio.option('campanulate')
+  shapeRadio.position(10, 10);
+
+  addShape(shapeMap, shapeRadio, 'convex', (radius, theta, phi) => {return radius})
+  addShape(shapeMap, shapeRadio, 'depressed', (radius, theta, phi) => {return radius * sin(theta)})
+  addShape(shapeMap, shapeRadio, 'umbonate', (radius, theta, phi) => {return radius * Math.max(sin(theta), cos(theta))})
+  addShape(shapeMap, shapeRadio, 'cup', (radius, theta, phi) => {return radius * Math.min(sin(theta), cos(theta))})
+
   shapeRadio.selected('convex')
 }
 
@@ -95,12 +99,11 @@ function draw() {
   }
 }
 
-// different from conventional math.
-// theta is the conic angle on the z-axis
-// phi is the radial angle on the x,y rotation
+// NOTE: different from conventional math.
+// theta is the conic angle on the z-axis, azimuth
+// phi is the radial angle on the x,y rotation, clock-arm
 function mapVertex(theta, phi, baseRadius) {
-  const r = shapeMap.get(shapeRadio.value())(baseRadius, theta);
-  // const r = baseRadius * sin(theta) * cos(theta); // depressed
+  const r = shapeMap.get(shapeRadio.value())(baseRadius, theta, phi);
   const x = r * sin(theta) * cos(phi);
   const y = r * sin(theta) * sin(phi);
   const z = r * cos(theta);
